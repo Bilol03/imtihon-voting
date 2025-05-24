@@ -1,0 +1,100 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreatePollInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input CreateUserInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input CreateVoteInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input LoginInput {
+  """Enter your email"""
+  email: String!
+  name: String
+
+  """Enter your password"""
+  password: String!
+}
+
+type LoginResponse {
+  """Access token"""
+  accessToken: String!
+  user: User!
+}
+
+type Mutation {
+  createPoll(createPollInput: CreatePollInput!): Poll!
+  createUser(createUserInput: CreateUserInput!): User!
+  createVote(createVoteInput: CreateVoteInput!): Vote!
+  login(LoginInput: LoginInput!): LoginResponse!
+  register(createAuthInput: RegisterInput!): User!
+  removePoll(id: Int!): Poll!
+  removeUser(id: Int!): User!
+  removeVote(id: Int!): Vote!
+  updatePoll(updatePollInput: UpdatePollInput!): Poll!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+  updateVote(updateVoteInput: UpdateVoteInput!): Vote!
+}
+
+type Poll {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Query {
+  poll(id: Int!): Poll!
+  user(id: Int!): User!
+  vote(id: Int!): Vote!
+}
+
+input RegisterInput {
+  email: String!
+  name: String!
+  password: String!
+}
+
+input UpdatePollInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input UpdateUserInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input UpdateVoteInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+type User {
+  createdAt: DateTime!
+  email: String!
+  id: ID!
+  name: String!
+  role: String!
+}
+
+type Vote {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
