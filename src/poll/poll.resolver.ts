@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { checkAdmin } from 'src/common/utils/check-admin';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { GqlAuthGuard } from 'src/guards/gql-auth.guard';
@@ -7,6 +7,7 @@ import { CreatePollInput } from './dto/create-poll.input';
 import { UpdatePollInput } from './dto/update-poll.input';
 import { Poll } from './entities/poll.entity';
 import { PollService } from './poll.service';
+import { PollResult } from 'src/vote/dto/poll-result';
 
 @Resolver(() => Poll)
 export class PollResolver {
@@ -53,4 +54,9 @@ export class PollResolver {
   ) {
     return this.pollService.remove(id, current_user);
   }
+
+    @ResolveField(() => [PollResult])
+    async results(@Parent() poll: Poll): Promise<PollResult[]> {
+      return this.pollService.findResult(poll.id);
+    }
 }

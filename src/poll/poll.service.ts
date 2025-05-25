@@ -1,11 +1,15 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreatePollInput } from './dto/create-poll.input';
 import { UpdatePollInput } from './dto/update-poll.input';
 import { Poll } from './entities/poll.entity';
-import { CurrentUser } from 'src/decorators/current-user.decorator';
+import { Vote } from 'src/vote/entities/vote.entity';
 
 @Injectable()
 export class PollService {
@@ -14,6 +18,8 @@ export class PollService {
     private readonly pollRepository: Repository<Poll>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Vote)
+    private readonly voteRepository: Repository<Vote>
   ) {}
 
   async create(createPollInput: CreatePollInput, current_user: any) {
@@ -31,14 +37,36 @@ export class PollService {
   }
 
   async findAll() {
-    return await this.pollRepository.find();
+    return await this.pollRepository.find({ where: { isActive: true } });
   }
 
   async findOne(id: number) {
     return await this.pollRepository.findOne({ where: { id, isActive: true } });
   }
 
-  async update(id: number, updatePollInput: UpdatePollInput, current_user) {    
+  async update(id: number, updatePollInput: UpdatePollInput, current_user) {
+    const poll = await this.pollRepository.findOne({
+      where: { id, isActive: true },
+    });
+
+    if (!poll) {
+      throw new NotFoundException('Poll not found or is inactive');
+    }
+    console.log(current_user);
+
+    if (
+      poll.createdBy.id !== current_user.sub &&
+      current_user.role !== 'admin'
+    ) {
+      throw new ForbiddenException('You can only update your own polls');
+    }
+
+    Object.assign(poll, updatePollInput);
+
+    return await this.pollRepository.save(poll);
+  }
+
+  async remove(id: number, current_user) {
     const poll = await this.pollRepository.findOne({
       where: { id, isActive: true },
     });
@@ -46,34 +74,50 @@ export class PollService {
     if (!poll) {
       throw new NotFoundException('Poll not found');
     }
-    console.log(current_user);
-    
-    if (poll.createdBy.id !== current_user.sub && current_user.role !== 'admin') {
-      throw new ForbiddenException('You can only update your own polls');
+
+    if (
+      poll.createdBy.id !== current_user.id &&
+      current_user.role !== 'admin'
+    ) {
+      throw new ForbiddenException('You can only delete your own polls');
     }
 
-    Object.assign(poll, updatePollInput)
+    poll.isActive = false;
 
     return await this.pollRepository.save(poll);
   }
 
-  async remove(id: number, current_user) {
+  async findResult(pollId: number) {
     const poll = await this.pollRepository.findOne({
-    where: { id, isActive: true },
-  });
-  console.log(poll);
-  
-  if (!poll) {
-    throw new NotFoundException('Poll not found');
-  }
+      where: { id: pollId },
+    });
 
-  if (poll.createdBy.id !== current_user.id && current_user.role !== 'admin') {
-    throw new ForbiddenException('You can only delete your own polls');
-  }
+    if (!poll) {
+      throw new NotFoundException('Poll not found');
+    }
 
-  poll.isActive = false;
+    // poll.options: string[] bo'lishi kerak
+    const results = await Promise.all(
+      poll.options.map(async (option) => {
+        const count = await this.voteRepository.count({
+          where: {
+            poll: { id: pollId },
+            selectedOption: option,
+          },
+        });
 
-  return await this.pollRepository.save(poll);
+        return { option, votes: count };
+      }),
+    );
 
+    const totalVotes = results.reduce((sum, r) => sum + r.votes, 0);
+
+    return results.map((r) => ({
+      ...r,
+      percentage:
+        totalVotes > 0
+          ? parseFloat(((r.votes / totalVotes) * 100).toFixed(2))
+          : 0,
+    }));
   }
 }

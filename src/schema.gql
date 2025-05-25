@@ -61,6 +61,13 @@ type Poll {
   isActive: Boolean!
   options: [String!]!
   question: String!
+  results: [PollResult!]!
+}
+
+type PollResult {
+  option: String!
+  percentage: Float!
+  votes: Float!
 }
 
 type Query {

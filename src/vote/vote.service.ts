@@ -45,13 +45,21 @@ export class VoteService {
       throw new NotFoundException('User not found');
     }
 
-    const is_voted = await this.voteRepository.findOne({where: {poll: {
-      id: createVoteInput.pollId
-    }, createdBy: {
-      id: current_user.id
-    }}});
+    const is_voted = await this.voteRepository.findOne({
+      where: {
+        poll: {
+          id: createVoteInput.pollId,
+        },
+        createdBy: {
+          id: current_user.id,
+        },
+      },
+    });
 
-    if(is_voted) throw new BadRequestException("You already voted. One user can vote only once")
+    if (is_voted)
+      throw new BadRequestException(
+        'You already voted. One user can vote only once',
+      );
     const vote = this.voteRepository.create({
       selectedOption: createVoteInput.selectedOption,
       poll,
@@ -61,9 +69,7 @@ export class VoteService {
     return await this.voteRepository.save(vote);
   }
 
-  findAll() {
-    return `This action returns all vote`;
-  }
+  
 
   findOne(id: number) {
     return `This action returns a #${id} vote`;
