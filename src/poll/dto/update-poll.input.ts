@@ -1,8 +1,11 @@
+import { InputType, Field, PartialType } from '@nestjs/graphql';
 import { CreatePollInput } from './create-poll.input';
-import { InputType, Field, Int, PartialType } from '@nestjs/graphql';
+import { IsOptional, IsBoolean } from 'class-validator';
 
 @InputType()
 export class UpdatePollInput extends PartialType(CreatePollInput) {
-  @Field(() => Int)
-  id: number;
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }

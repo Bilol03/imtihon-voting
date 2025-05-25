@@ -3,8 +3,8 @@
 # ------------------------------------------------------
 
 input CreatePollInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  options: [String!]!
+  question: String!
 }
 
 input CreateUserInput {
@@ -46,18 +46,23 @@ type Mutation {
   removePoll(id: Int!): Poll!
   removeUser(id: Int!): User!
   removeVote(id: Int!): Vote!
-  updatePoll(updatePollInput: UpdatePollInput!): Poll!
+  updatePoll(id: Int!, updatePollInput: UpdatePollInput!): Poll!
   updateUser(updateUserInput: UpdateUserInput!): User!
   updateVote(updateVoteInput: UpdateVoteInput!): Vote!
 }
 
 type Poll {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  createdAt: DateTime!
+  createdBy: User!
+  id: ID!
+  isActive: Boolean!
+  options: [String!]!
+  question: String!
 }
 
 type Query {
   poll(id: Int!): Poll!
+  polls: [Poll!]!
   user(id: Int!): User!
   vote(id: Int!): Vote!
 }
@@ -69,9 +74,9 @@ input RegisterInput {
 }
 
 input UpdatePollInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
+  isActive: Boolean
+  options: [String!]
+  question: String
 }
 
 input UpdateUserInput {

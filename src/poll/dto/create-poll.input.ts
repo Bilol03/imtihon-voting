@@ -1,7 +1,14 @@
-import { InputType, Int, Field } from '@nestjs/graphql';
+import { InputType, Field } from '@nestjs/graphql';
+import { IsNotEmpty, IsArray, ArrayMinSize } from 'class-validator';
 
 @InputType()
 export class CreatePollInput {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+  @Field()
+  @IsNotEmpty()
+  question: string;
+
+  @Field(() => [String])
+  @IsArray()
+  @ArrayMinSize(2)
+  options: string[];
 }

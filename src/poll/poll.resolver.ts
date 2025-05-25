@@ -3,18 +3,28 @@ import { PollService } from './poll.service';
 import { Poll } from './entities/poll.entity';
 import { CreatePollInput } from './dto/create-poll.input';
 import { UpdatePollInput } from './dto/update-poll.input';
+import { UseGuards } from '@nestjs/common';
+import { GqlAuthGuard } from 'src/guards/gql-auth.guard';
+import { CurrentUser } from 'src/decorators/current-user.decorator';
+import { AuthenticationError } from '@nestjs/apollo';
+import { checkAdmin } from 'src/common/utils/check-admin';
 
 @Resolver(() => Poll)
 export class PollResolver {
   constructor(private readonly pollService: PollService) {}
 
-  @Mutation(() => Poll)
-  createPoll(@Args('createPollInput') createPollInput: CreatePollInput) {
-    return this.pollService.create(createPollInput);
+
+  @Mutation(() => Poll, {name: "createPoll"})
+  @UseGuards(GqlAuthGuard)
+  createPoll(@Args('createPollInput') createPollInput: CreatePollInput, @CurrentUser() current_user: any) {
+    checkAdmin(current_user)
+    return this.pollService.create(createPollInput, current_user);
   }
 
-  @Query(() => [Poll], { name: 'poll' })
-  findAll() {
+  @Query(() => [Poll], { name: 'polls' })
+  @UseGuards(GqlAuthGuard)
+  findAll(@CurrentUser() current_user: any) {
+    checkAdmin(current_user)
     return this.pollService.findAll();
   }
 
@@ -24,8 +34,8 @@ export class PollResolver {
   }
 
   @Mutation(() => Poll)
-  updatePoll(@Args('updatePollInput') updatePollInput: UpdatePollInput) {
-    return this.pollService.update(updatePollInput.id, updatePollInput);
+  updatePoll(@Args('id', { type: () => Int }) id: number, @Args('updatePollInput') updatePollInput: UpdatePollInput, @CurrentUser() current_user: any) {
+    return this.pollService.update(id, updatePollInput, current_user);
   }
 
   @Mutation(() => Poll)
