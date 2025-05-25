@@ -1,7 +1,10 @@
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import redisStore from 'cache-manager-ioredis';
 import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -9,10 +12,18 @@ import { AuthModule } from './auth/auth.module';
 import { PollModule } from './poll/poll.module';
 import { UserModule } from './user/user.module';
 import { VoteModule } from './vote/vote.module';
-import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    CacheModule.registerAsync({
+      useFactory: () => ({
+        store: redisStore,
+        host: 'localhost',
+        port: 6379,
+        ttl: 3000,
+      }),
+      isGlobal: true,
+    }),
     ConfigModule.forRoot({
       isGlobal: true, // makes config available everywhere
     }),

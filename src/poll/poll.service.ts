@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  Inject,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,6 +12,9 @@ import { CreatePollInput } from './dto/create-poll.input';
 import { UpdatePollInput } from './dto/update-poll.input';
 import { Poll } from './entities/poll.entity';
 
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+
 @Injectable()
 export class PollService {
   constructor(
@@ -20,6 +24,8 @@ export class PollService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Vote)
     private readonly voteRepository: Repository<Vote>,
+    @Inject(CACHE_MANAGER)
+    private cacheManager: Cache,
   ) {}
 
   async create(createPollInput: CreatePollInput, current_user: any) {
@@ -37,7 +43,18 @@ export class PollService {
   }
 
   async findAll() {
-    return await this.pollRepository.find({ where: { isActive: true } });
+    const cacheKey = 'polls';
+    const cached = await this.cacheManager.get(cacheKey);
+
+    if (cached) {
+      console.log('Returning from cache');
+      return cached;
+    }
+    const polls = await this.pollRepository.find();
+
+    await this.cacheManager.set(cacheKey, polls, 3000);
+
+    return polls;
   }
 
   async findOne(id: number) {
@@ -103,13 +120,13 @@ export class PollService {
           where: {
             poll: { id: pollId },
             selectedOption: option,
-            isActive: true
+            isActive: true,
           },
           relations: ['createdBy'],
         });
         const votedBy = count.map((vote) => vote.createdBy);
 
-        return { option, votes: votedBy.length, votedBy};
+        return { option, votes: votedBy.length, votedBy };
       }),
     );
 

@@ -118,6 +118,7 @@ type Vote {
   createdAt: DateTime!
   createdBy: User!
   id: ID!
+  isActive: Boolean!
   poll: Poll!
   selectedOption: String!
 }
