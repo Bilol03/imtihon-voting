@@ -15,6 +15,7 @@ import { VoteModule } from './vote/vote.module';
 
 @Module({
   imports: [
+
     CacheModule.registerAsync({
       useFactory: () => ({
         store: redisStore,
