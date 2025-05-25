@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { CreatePollInput } from './dto/create-poll.input';
 import { UpdatePollInput } from './dto/update-poll.input';
 import { Poll } from './entities/poll.entity';
+import { CurrentUser } from 'src/decorators/current-user.decorator';
 
 @Injectable()
 export class PollService {
@@ -37,17 +38,17 @@ export class PollService {
     return await this.pollRepository.findOne({ where: { id, isActive: true } });
   }
 
-  async update(id: number, updatePollInput: UpdatePollInput, current_user) {
+  async update(id: number, updatePollInput: UpdatePollInput, current_user) {    
     const poll = await this.pollRepository.findOne({
       where: { id, isActive: true },
-      relations: ['createdBy'], // kerak bo‘lsa
     });
 
     if (!poll) {
       throw new NotFoundException('Poll not found');
     }
-
-    if (poll.createdBy.id !== current_user.id && current_user.role !== 'admin') {
+    console.log(current_user);
+    
+    if (poll.createdBy.id !== current_user.sub && current_user.role !== 'admin') {
       throw new ForbiddenException('You can only update your own polls');
     }
 
@@ -56,7 +57,23 @@ export class PollService {
     return await this.pollRepository.save(poll);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} poll`;
+  async remove(id: number, current_user) {
+    const poll = await this.pollRepository.findOne({
+    where: { id, isActive: true },
+  });
+  console.log(poll);
+  
+  if (!poll) {
+    throw new NotFoundException('Poll not found');
+  }
+
+  if (poll.createdBy.id !== current_user.id && current_user.role !== 'admin') {
+    throw new ForbiddenException('You can only delete your own polls');
+  }
+
+  poll.isActive = false;
+
+  return await this.pollRepository.save(poll);
+
   }
 }
