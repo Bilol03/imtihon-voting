@@ -1,5 +1,12 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Vote } from 'src/vote/entities/vote.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @ObjectType()
 @Entity('users')
@@ -26,4 +33,7 @@ export class User {
   @Field()
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany(() => Vote, (vote) => vote.createdBy)
+  votes: Vote[];
 }

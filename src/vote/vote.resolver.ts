@@ -3,14 +3,18 @@ import { VoteService } from './vote.service';
 import { Vote } from './entities/vote.entity';
 import { CreateVoteInput } from './dto/create-vote.input';
 import { UpdateVoteInput } from './dto/update-vote.input';
+import { UseGuards } from '@nestjs/common';
+import { GqlAuthGuard } from 'src/guards/gql-auth.guard';
+import { CurrentUser } from 'src/decorators/current-user.decorator';
 
 @Resolver(() => Vote)
 export class VoteResolver {
   constructor(private readonly voteService: VoteService) {}
 
   @Mutation(() => Vote)
-  createVote(@Args('createVoteInput') createVoteInput: CreateVoteInput) {
-    return this.voteService.create(createVoteInput);
+  @UseGuards(GqlAuthGuard)
+  createVote(@Args('createVoteInput') createVoteInput: CreateVoteInput, @CurrentUser() current_user: any) {
+    return this.voteService.create(createVoteInput, current_user);
   }
 
   @Query(() => [Vote], { name: 'vote' })

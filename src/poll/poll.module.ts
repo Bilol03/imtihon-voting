@@ -8,5 +8,6 @@ import { UserModule } from 'src/user/user.module';
 @Module({
   imports: [TypeOrmModule.forFeature([Poll]), UserModule],
   providers: [PollResolver, PollService],
+  exports: [TypeOrmModule, PollService],
 })
 export class PollModule {}
