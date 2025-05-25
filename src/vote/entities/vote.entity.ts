@@ -1,7 +1,13 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
-import { User } from 'src/user/entities/user.entity';
+import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { Poll } from 'src/poll/entities/poll.entity';
+import { User } from 'src/user/entities/user.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @ObjectType()
 @Entity()
@@ -11,7 +17,10 @@ export class Vote {
   id: number;
 
   @Field(() => User)
-  @ManyToOne(() => User, user => user.votes, { eager: true, onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.votes, {
+    eager: true,
+    onDelete: 'CASCADE',
+  })
   createdBy: User;
 
   @Field(() => Poll)
@@ -25,4 +34,8 @@ export class Vote {
   @Field()
   @CreateDateColumn()
   createdAt: Date;
+
+  @Field()
+  @Column({ default: true })
+  isActive: boolean;
 }

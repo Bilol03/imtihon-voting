@@ -103,6 +103,7 @@ export class PollService {
           where: {
             poll: { id: pollId },
             selectedOption: option,
+            isActive: true
           },
           relations: ['createdBy'],
         });
