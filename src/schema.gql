@@ -67,6 +67,7 @@ type Poll {
 type PollResult {
   option: String!
   percentage: Float!
+  votedBy: [User!]!
   votes: Float!
 }
 

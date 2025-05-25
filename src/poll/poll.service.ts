@@ -5,11 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
+import { Vote } from 'src/vote/entities/vote.entity';
 import { Repository } from 'typeorm';
 import { CreatePollInput } from './dto/create-poll.input';
 import { UpdatePollInput } from './dto/update-poll.input';
 import { Poll } from './entities/poll.entity';
-import { Vote } from 'src/vote/entities/vote.entity';
 
 @Injectable()
 export class PollService {
@@ -19,7 +19,7 @@ export class PollService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(Vote)
-    private readonly voteRepository: Repository<Vote>
+    private readonly voteRepository: Repository<Vote>,
   ) {}
 
   async create(createPollInput: CreatePollInput, current_user: any) {
@@ -99,14 +99,16 @@ export class PollService {
     // poll.options: string[] bo'lishi kerak
     const results = await Promise.all(
       poll.options.map(async (option) => {
-        const count = await this.voteRepository.count({
+        const count = await this.voteRepository.find({
           where: {
             poll: { id: pollId },
             selectedOption: option,
           },
+          relations: ['createdBy'],
         });
+        const votedBy = count.map((vote) => vote.createdBy);
 
-        return { option, votes: count };
+        return { option, votes: votedBy.length, votedBy};
       }),
     );
 

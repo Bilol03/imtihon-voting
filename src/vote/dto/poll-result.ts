@@ -1,4 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { User } from 'src/user/entities/user.entity';
 
 @ObjectType()
 export class PollResult {
@@ -10,4 +11,6 @@ export class PollResult {
 
   @Field()
   percentage: number;
+  @Field(() => [User])
+  votedBy: User[];
 }
